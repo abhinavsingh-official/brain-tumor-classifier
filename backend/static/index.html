@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Brain Tumor MRI Classifier — Demo</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 680px; margin: 40px auto; padding: 0 16px; color: #1b1b1f; }
+  h1 { font-size: 1.4rem; }
+  p.sub { color: #555; margin-top: -8px; }
+  .card { border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top: 20px; }
+  button { background: #2b6cb0; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+  button:disabled { background: #999; cursor: not-allowed; }
+  .result { margin-top: 16px; }
+  .result img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
+  .pred { font-size: 1.2rem; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  td, th { text-align: left; padding: 4px 8px; border-bottom: 1px solid #eee; }
+  .err { color: #b00020; }
+  footer { margin-top: 30px; font-size: 0.8rem; color: #777; }
+</style>
+</head>
+<body>
+  <h1>Brain Tumor MRI Classifier</h1>
+  <p class="sub">Upload a brain MRI slice to classify it as glioma, meningioma, pituitary tumor, or no tumor, with a Grad-CAM heatmap of what the model looked at.</p>
+
+  <div class="card">
+    <input type="file" id="fileInput" accept="image/*" />
+    <button id="submitBtn">Classify</button>
+    <div id="status"></div>
+    <div class="result" id="result" style="display:none;">
+      <div class="pred" id="predLabel"></div>
+      <table id="probTable"></table>
+      <img id="gradcamImg" alt="Grad-CAM heatmap overlay" />
+    </div>
+  </div>
+
+  <footer>
+    Demo model retrained on the public Kaggle brain-tumor-mri-dataset, built on top of the
+    preprocessing/architecture approach from Masoud Nickparvar's
+    <a href="https://github.com/masoudnick/Brain-Tumor-MRI-Classification" target="_blank">Brain-Tumor-MRI-Classification</a>
+    project (MIT License). For portfolio/demo purposes only — not a medical device.
+  </footer>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const submitBtn = document.getElementById('submitBtn');
+const statusEl = document.getElementById('status');
+const resultEl = document.getElementById('result');
+const predLabel = document.getElementById('predLabel');
+const probTable = document.getElementById('probTable');
+const gradcamImg = document.getElementById('gradcamImg');
+
+submitBtn.addEventListener('click', async () => {
+  if (!fileInput.files.length) {
+    statusEl.innerHTML = '<p class="err">Please choose an image first.</p>';
+    return;
+  }
+  submitBtn.disabled = true;
+  statusEl.textContent = 'Classifying...';
+  resultEl.style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+
+  try {
+    const resp = await fetch('/predict', { method: 'POST', body: formData });
+    if (!resp.ok) {
+      const errBody = await resp.json().catch(() => ({}));
+      throw new Error(errBody.detail || `Request failed (${resp.status})`);
+    }
+    const data = await resp.json();
+
+    predLabel.textContent = `Prediction: ${data.predicted_class} (${(data.confidence * 100).toFixed(1)}% confidence)`;
+
+    probTable.innerHTML = '<tr><th>Class</th><th>Probability</th></tr>' +
+      Object.entries(data.probabilities)
+        .sort((a, b) => b[1] - a[1])
+        .map(([label, p]) => `<tr><td>${label}</td><td>${(p * 100).toFixed(1)}%</td></tr>`)
+        .join('');
+
+    gradcamImg.src = `data:image/png;base64,${data.gradcam_png_base64}`;
+
+    statusEl.textContent = '';
+    resultEl.style.display = 'block';
+  } catch (err) {
+    statusEl.innerHTML = `<p class="err">${err.message}</p>`;
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
