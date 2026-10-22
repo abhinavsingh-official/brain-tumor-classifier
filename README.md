@@ -63,6 +63,23 @@ this retraining run (Dropout 0.4, 200x200) — that discrepancy is in the paper 
 corrected here; the real notebook/retrained values above are the ground truth for this
 README and the demo.
 
+## Screenshots
+
+**The upload-and-classify demo, run live against the real retrained model:**
+
+![Upload demo, empty state](docs/screenshots/demo-empty.png)
+
+![Upload demo with a real prediction + Grad-CAM overlay](docs/screenshots/demo-result.png)
+
+**Grad-CAM heatmaps from the real model** (which MRI regions drove the prediction):
+
+| `notumor` (0.95 confidence) | `meningioma` (0.31 confidence) |
+|---|---|
+| ![Grad-CAM, notumor](docs/screenshots/gradcam-notumor.png) | ![Grad-CAM, meningioma](docs/screenshots/gradcam-meningioma.png) |
+
+More samples (including a few incorrect predictions, left in rather than cherry-picked) are in
+[`gradcam_samples/`](gradcam_samples/).
+
 ## Project structure
 
 ```
