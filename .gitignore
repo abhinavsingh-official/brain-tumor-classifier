@@ -1,0 +1,19 @@
+# Dataset (download separately -- see README)
+data/Training/
+data/Testing/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+
+# Training artifacts that aren't the final checkpoint
+models/brain_tumor_resnet50_best.keras
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,14 @@
+# Pin numpy<2.0 to avoid ABI conflicts with this TensorFlow build.
+numpy<2.0.0
+tensorflow-macos==2.16.2; sys_platform == "darwin"
+tensorflow-metal==1.2.0; sys_platform == "darwin"
+tensorflow==2.16.2; sys_platform != "darwin"
+keras==3.15.1
+opencv-python-headless==4.11.0.86
+pillow==13.0.0
+scikit-learn==1.9.1
+matplotlib==3.11.2
+tqdm
+fastapi==0.159.1
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
